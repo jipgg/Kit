@@ -1,13 +1,10 @@
-namespace Fast;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using static System.Runtime.CompilerServices.MethodImplOptions;
+namespace Kit.Unmanaged.Internal;
 
-public unsafe ref struct PointerEnumerator<T> where T: unmanaged {
+public unsafe ref struct PtrEnumerator<T> where T: unmanaged {
     readonly T* _begin;
     readonly T* _end;
     T* _current;
-    public PointerEnumerator(T* begin, T* end) {
+    public PtrEnumerator(T* begin, T* end) {
         Debug.Assert(begin != null);
         Debug.Assert(end != null);
         _begin = begin;

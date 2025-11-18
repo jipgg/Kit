@@ -1,4 +1,4 @@
-namespace Fast;
+namespace Kit.Unmanaged.Internal;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using static System.Runtime.CompilerServices.MethodImplOptions;
@@ -31,7 +31,7 @@ where T: unmanaged where TAllocator: IAllocator<T> {
     [MethodImpl(AggressiveInlining)]
     public Span<T> AsSpan() => new(_data, (int)_size);
     [MethodImpl(AggressiveInlining)]
-    public PointerEnumerator<T> GetEnumerator() => new(_data, _data +_size);
+    public PtrEnumerator<T> GetEnumerator() => new(_data, _data +_size);
     [MethodImpl(AggressiveInlining)]
     public void Add(in T v) {
         Reserve(1);
