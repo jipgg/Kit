@@ -1,0 +1,2 @@
+namespace Kit.Tests;
+
