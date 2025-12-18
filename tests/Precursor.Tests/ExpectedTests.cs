@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-namespace Kit.Tests;
+namespace Precursor.Tests;
 
 using Expected = Expected<Foo, Bar>;
 using RefExpected = RefExpected<RefFoo, RefBar>;

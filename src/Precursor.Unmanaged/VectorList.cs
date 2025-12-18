@@ -1,5 +1,5 @@
-using Kit.Unmanaged.Allocators;
-namespace Kit.Unmanaged;
+using Precursor.Unmanaged.Allocators;
+namespace Precursor.Unmanaged;
 
 sealed public class VectorList<T> : IDisposable where T : unmanaged {
    BasicVector<T, NativeAllocator<T>> _vector;

@@ -1,5 +1,5 @@
 using FluentAssertions;
-namespace Kit.Tests;
+namespace Precursor.Tests;
 
 using Optional = Optional<Foo>;
 using RefOptional = RefOptional<RefFoo>;

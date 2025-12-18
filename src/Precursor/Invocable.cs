@@ -1,4 +1,4 @@
-namespace Kit;
+namespace Precursor;
 
 public interface IInvocable<in T, out R>
 where T : allows ref struct

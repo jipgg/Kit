@@ -1,8 +1,8 @@
-namespace Kit;
+namespace Precursor;
 
 using static MethodImplOptions;
 
-public sealed class InvalidExpectedAccessException: InvalidOperationException;
+public sealed class InvalidExpectedAccessException : InvalidOperationException;
 
 public readonly ref struct Unexpected<E>
 where E : allows ref struct {

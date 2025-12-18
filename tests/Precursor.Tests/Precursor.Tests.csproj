@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Kit\Kit.csproj" />
+    <ProjectReference Include="..\..\src\Precursor\Precursor.csproj" />
   </ItemGroup>
 
 </Project>

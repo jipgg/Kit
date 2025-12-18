@@ -1,4 +1,4 @@
-namespace Kit.Unmanaged;
+namespace Precursor.Unmanaged;
 
 public unsafe interface IAllocator<T> where T : unmanaged {
    T* Allocate(nuint count);

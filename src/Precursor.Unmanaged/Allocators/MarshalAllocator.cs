@@ -1,4 +1,4 @@
-namespace Kit.Unmanaged.Allocators;
+namespace Precursor.Unmanaged.Allocators;
 
 public unsafe struct MarshalAllocator<T>() : IAllocator<T> where T : unmanaged {
    public T* Allocate(nuint count) => (T*)Marshal.AllocHGlobal((int)Common.ByteCount<T>(count));

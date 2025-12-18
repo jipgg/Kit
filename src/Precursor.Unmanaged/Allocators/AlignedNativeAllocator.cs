@@ -1,4 +1,4 @@
-namespace Kit.Unmanaged.Allocators;
+namespace Precursor.Unmanaged.Allocators;
 
 public unsafe struct AlignedNativeAllocator<T>(nuint Alignment = 32) : IAllocator<T> where T : unmanaged {
    public T* Allocate(nuint count) => (T*)NativeMemory.AlignedAlloc(Common.ByteCount<T>(count), Alignment);

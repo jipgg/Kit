@@ -1,4 +1,4 @@
-namespace Kit.Unmanaged.Internal;
+namespace Precursor.Unmanaged.Internal;
 
 public unsafe ref struct PointerEnumerator<T> where T : unmanaged {
    readonly T* _begin;

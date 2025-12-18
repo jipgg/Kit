@@ -1,6 +1,6 @@
-namespace Kit;
+namespace Precursor;
 
-public sealed class InvalidOptionalAccessException: InvalidOperationException;
+public sealed class InvalidOptionalAccessException : InvalidOperationException;
 
 public readonly struct Optional<T> {
    public readonly T? Value;

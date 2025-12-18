@@ -1,4 +1,4 @@
-namespace Kit.Unmanaged.Allocators;
+namespace Precursor.Unmanaged.Allocators;
 
 public unsafe readonly struct NativeAllocator<T> : IAllocator<T> where T : unmanaged {
    public T* Allocate(nuint count) => (T*)NativeMemory.Alloc(Common.ByteCount<T>(count));

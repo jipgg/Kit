@@ -1,4 +1,4 @@
-namespace Kit.Tests;
+namespace Precursor.Tests;
 
 readonly record struct Foo(int X);
 readonly record struct Bar(string? Msg);

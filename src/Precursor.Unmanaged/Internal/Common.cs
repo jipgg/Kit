@@ -1,4 +1,4 @@
-namespace Kit.Unmanaged.Internal;
+namespace Precursor.Unmanaged.Internal;
 
 using System.Runtime.InteropServices;
 

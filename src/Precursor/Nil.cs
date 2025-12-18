@@ -1,4 +1,4 @@
-namespace Kit;
+namespace Precursor;
 
 public readonly struct Nil {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
