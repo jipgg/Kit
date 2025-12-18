@@ -12,7 +12,7 @@
   <TargetFramework>net10.0</TargetFramework>
 
   <PackageId>Precursor</PackageId>
-  <Version>0.0.1</Version>
+  <Version>0.0.2</Version>
   <Authors>jipg</Authors>
   <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
