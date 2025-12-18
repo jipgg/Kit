@@ -6,7 +6,6 @@ where R : allows ref struct {
    R Invoke(T v);
 }
 
-
 public readonly struct FuncInvocableWrapper<T, R>(Func<T, R> f) : IInvocable<T, R>
 where T : allows ref struct
 where R : allows ref struct {
@@ -38,9 +37,5 @@ public static class Invocable {
    where Invocable : IInvocable<T, R> {
       return f.Invoke(v);
    }
-}
-
-public interface IStaticInvoicable<in T, out R> {
-   static abstract R Invoke(T v);
 }
 

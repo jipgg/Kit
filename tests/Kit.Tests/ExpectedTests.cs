@@ -4,19 +4,6 @@ namespace Kit.Tests;
 using Expected = Expected<Foo, Bar>;
 using RefExpected = RefExpected<RefFoo, RefBar>;
 
-readonly record struct Foo(int X);
-readonly record struct Bar(string? Msg);
-
-readonly ref struct RefFoo {
-   public readonly int X;
-   public RefFoo(int x) => X = x;
-}
-
-readonly ref struct RefBar {
-   public readonly string Msg;
-   public RefBar(string msg) => Msg = msg;
-}
-
 public class ExpectedTests {
    [Fact]
    public void HasValue_when_constructed_with_value() {
@@ -39,6 +26,12 @@ public class ExpectedTests {
       var e = default(Expected);
       e.HasValue.Should().BeFalse();
       e.HasError.Should().BeTrue();
+   }
+   [Fact]
+   public void Explicit_cast_throws_when_empty() {
+      var o = default(Expected);
+      Action act = () => { var _ = (Foo)o; };
+      act.Should().Throw<InvalidExpectedAccessException>();
    }
 }
 public class ExpectedMapTests {
@@ -192,6 +185,14 @@ public class RefExpectedTests {
       e.HasValue.Should().BeFalse();
       e.HasError.Should().BeTrue();
    }
+   [Fact]
+   public void Explicit_cast_throws_when_empty() {
+      Action act = () => {
+         var e = default(RefExpected);
+         var _ = (RefFoo)e;
+      };
+      act.Should().Throw<InvalidExpectedAccessException>();
+   }
 }
 public class RefExpectedMapTests {
    [Fact]
@@ -282,6 +283,8 @@ public unsafe class RefExpectedFunctionPointerTests {
    }
 }
 public class RefExpectedInvocableTests {
+   static RefFoo InvokeRef(RefFoo f) => new(f.X * 2);
+
    struct Invoker : IInvocable<RefFoo, RefFoo> {
       public RefFoo Invoke(RefFoo f) => new RefFoo(f.X * 2);
    }
