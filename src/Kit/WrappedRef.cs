@@ -2,44 +2,30 @@ namespace Kit;
 
 using static MethodImplOptions;
 
-public readonly ref struct Ref<T> {
-   internal readonly ref T _target;
+public readonly ref struct WrappedRef<T> {
+   internal readonly ref T _ref;
 
    [MethodImpl(AggressiveInlining)]
-   public Ref(ref T r) => _target = ref r;
+   public WrappedRef(ref T r) => _ref = ref r;
 
    [MethodImpl(AggressiveInlining)]
-   public readonly ReadOnlyRef<T> AsReadOnly() => new(ref _target);
+   public readonly ReadOnlyWrappedRef<T> AsReadOnly() => new(ref _ref);
 
    [MethodImpl(AggressiveInlining)]
-   public ref T Get() => ref _target;
-
-   public ref T Target {
-      [MethodImpl(AggressiveInlining)]
-      get => ref _target;
-   }
+   public ref T Unwrap() => ref _ref;
 
    [MethodImpl(AggressiveInlining)]
-   public static implicit operator ReadOnlyRef<T>(Ref<T> r) => new(ref r._target);
+   public static implicit operator ReadOnlyWrappedRef<T>(WrappedRef<T> r) => new(ref r._ref);
 
-   [MethodImpl(AggressiveInlining)]
-   public static implicit operator T(in Ref<T> r) => r._target;
 }
 
-public readonly ref struct ReadOnlyRef<T> {
-   internal readonly ref readonly T _target;
+public readonly ref struct ReadOnlyWrappedRef<T> {
+   internal readonly ref readonly T _ref;
 
    [MethodImpl(AggressiveInlining)]
-   public ReadOnlyRef(ref readonly T r) => _target = ref r;
+   public ReadOnlyWrappedRef(ref readonly T r) => _ref = ref r;
 
    [MethodImpl(AggressiveInlining)]
-   public static implicit operator T(in ReadOnlyRef<T> r) => r._target;
+   public ref readonly T Unwrap() => ref _ref;
 
-   [MethodImpl(AggressiveInlining)]
-   public ref readonly T Get() => ref _target;
-
-   public ref readonly T Target {
-      [MethodImpl(AggressiveInlining)]
-      get => ref _target;
-   }
 }
