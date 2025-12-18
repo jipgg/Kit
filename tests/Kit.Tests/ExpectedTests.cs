@@ -4,7 +4,7 @@ namespace Kit.Tests;
 using Expected = Expected<Foo, Bar>;
 using RefExpected = RefExpected<RefFoo, RefBar>;
 
-public class ExpectedTests {
+public class Expected_Tests {
    [Fact]
    public void HasValue_when_constructed_with_value() {
       var e = new Expected(new Foo(42));
@@ -34,7 +34,7 @@ public class ExpectedTests {
       act.Should().Throw<InvalidExpectedAccessException>();
    }
 }
-public class ExpectedMapTests {
+public class Expected_MapTests {
    [Fact]
    public void Map_applies_only_on_value() {
       var e = new Expected(new Foo(10))
@@ -64,7 +64,7 @@ public class ExpectedMapTests {
       e.Error.Msg.Should().Be("xyz");
    }
 }
-public class ExpectedBindTests {
+public class Expected_BindTests {
    static Expected Inc(Foo f)
        => new Expected(new Foo(f.X + 1));
 
@@ -103,7 +103,7 @@ public class ExpectedBindTests {
       e.Value.X.Should().Be(1);
    }
 }
-public unsafe class ExpectedFunctionPointerTests {
+public unsafe class Expected_DelegatePointerTests {
    static Foo Double(Foo f) => new Foo(f.X * 2);
    static Expected DoubleExp(Foo f)
        => new Expected(new Foo(f.X * 2));
@@ -124,7 +124,7 @@ public unsafe class ExpectedFunctionPointerTests {
       e.Value.X.Should().Be(6);
    }
 }
-public class ExpectedInvocableTests {
+public class Expected_InvocableTests {
    struct Invoker : IInvocable<Foo, Foo> {
       public Foo Invoke(Foo f) => new Foo(f.X * 2);
    }
@@ -159,7 +159,7 @@ public class ExpectedInvocableTests {
    }
 }
 //@RefExpected
-public class RefExpectedTests {
+public class RefExpected_Tests {
    [Fact]
    public void HasValue_when_constructed_with_value() {
       var e = new RefExpected(new RefFoo(42));
@@ -194,7 +194,7 @@ public class RefExpectedTests {
       act.Should().Throw<InvalidExpectedAccessException>();
    }
 }
-public class RefExpectedMapTests {
+public class RefExpected_MapTests {
    [Fact]
    public void Map_applies_only_on_value() {
       var e = new RefExpected(new RefFoo(10))
@@ -224,7 +224,7 @@ public class RefExpectedMapTests {
       e.Error.Msg.Should().Be("xyz");
    }
 }
-public class RefExpectedBindTests {
+public class RefExpected_BindTests {
    static RefExpected Inc(RefFoo f) => new(new RefFoo(f.X + 1));
 
    [Fact]
@@ -262,7 +262,7 @@ public class RefExpectedBindTests {
       e.Value.X.Should().Be(1);
    }
 }
-public unsafe class RefExpectedFunctionPointerTests {
+public unsafe class RefExpected_FunctionPointerTests {
    static RefFoo Double(RefFoo f) => new RefFoo(f.X * 2);
    static RefExpected DoubleExp(RefFoo f) => new(new RefFoo(f.X * 2));
 
@@ -282,7 +282,7 @@ public unsafe class RefExpectedFunctionPointerTests {
       e.Value.X.Should().Be(6);
    }
 }
-public class RefExpectedInvocableTests {
+public class RefExpected_InvocableTests {
    static RefFoo InvokeRef(RefFoo f) => new(f.X * 2);
 
    struct Invoker : IInvocable<RefFoo, RefFoo> {
