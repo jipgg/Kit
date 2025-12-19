@@ -1,12 +1,11 @@
-namespace Precursor.Unmanaged.Internal;
+namespace Precursor.Unmanaged;
 
 public unsafe ref struct PointerEnumerator<T> where T : unmanaged {
    readonly T* _begin;
    readonly T* _end;
    T* _current;
    public PointerEnumerator(T* begin, T* end) {
-      Debug.Assert(begin != null);
-      Debug.Assert(end != null);
+      Debug.Assert(begin is not null && end is not null && begin < end);
       _begin = begin;
       _end = end;
       _current = StartPosition;
