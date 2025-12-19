@@ -1,6 +1,8 @@
 using System.Diagnostics;
 namespace Precursor;
 
+using static MethodImplOptions;
+
 public interface ISmallBuffer<Self, T> where Self : ISmallBuffer<Self, T> {
    static abstract int Length { get; }
    static abstract Span<T> AsSpan(ref Self self);
@@ -9,16 +11,16 @@ public interface ISmallBuffer<Self, T> where Self : ISmallBuffer<Self, T> {
 
 
 [InlineArray(LengthAsConst)]
-public struct DefaultSmallBuffer<T> : ISmallBuffer<DefaultSmallBuffer<T>, T> {
+public struct SmallBuffer10<T> : ISmallBuffer<SmallBuffer10<T>, T> {
    T _data;
    const int LengthAsConst = 10;
    public static int Length => LengthAsConst;
 
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static Span<T> AsSpan(ref DefaultSmallBuffer<T> b) => b;
+   [MethodImpl(AggressiveInlining)]
+   public static Span<T> AsSpan(ref SmallBuffer10<T> b) => b;
 
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public static ReadOnlySpan<T> AsReadOnlySpan(ref readonly DefaultSmallBuffer<T> b) => b;
+   [MethodImpl(AggressiveInlining)]
+   public static ReadOnlySpan<T> AsReadOnlySpan(ref readonly SmallBuffer10<T> b) => b;
 }
 
 public struct ValueList<T, SmallBuffer>
@@ -48,7 +50,7 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
    public readonly bool IsBufferStored
       => _list is null;
 
-   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   [MethodImpl(AggressiveInlining)]
    public ValueList() {
       _count = 0;
       _buffer = default;
@@ -129,7 +131,6 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
       if (IsBufferStored) MigrateToList();
       return _list;
    }
-   //public List<T> AsList() => IsBufferStored ? [.. SmallBuffer.AsSpan(ref _buffer)[.._count]] : _list;
 
    public bool Contains(T value) => IndexOf(value) is not -1;
 
@@ -148,4 +149,26 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
    }
    [UnscopedRef]
    public Enumerator GetEnumerator() => new(ref this);
+}
+
+public struct ValueList<T> where T : IEquatable<T> {
+   ValueList<T, SmallBuffer10<T>> _impl;
+   public readonly int Count => _impl.Count;
+   public readonly bool IsBufferStored => _impl.IsBufferStored;
+   public ValueList() => _impl = new();
+   public void Add(in T item) => _impl.Add(in item);
+
+   public T this[int i] {
+      get => _impl[i];
+      set => _impl[i] = value;
+   }
+   public readonly int IndexOf(in T item) => _impl.IndexOf(in item);
+   public void Insert(int index, in T item) => _impl.Insert(index, item);
+   public void RemoveAt(int index) => _impl.RemoveAt(index);
+   public void Clear() => _impl.Clear();
+   public List<T> AsList() => _impl.AsList();
+   public bool Contains(T item) => _impl.Contains(item);
+   public bool Remove(T item) => _impl.Remove(item);
+   [UnscopedRef]
+   public ValueList<T, SmallBuffer10<T>>.Enumerator GetEnumerator() => _impl.GetEnumerator();
 }

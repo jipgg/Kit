@@ -2,7 +2,7 @@ using FluentAssertions;
 
 namespace Precursor.Tests;
 
-using IntList = ValueList<int, DefaultSmallBuffer<int>>;
+using IntList = ValueList<int, SmallBuffer10<int>>;
 
 public class ValueListLaws
 {
