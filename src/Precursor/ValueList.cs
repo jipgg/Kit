@@ -30,17 +30,32 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
 
    public readonly int Count => IsBufferStored ? _count : _list.Count;
 
+   [Conditional("DEBUG")]
+   readonly void AssertInvariant() {
+      if (_list is null)
+         Debug.Assert(_count >= 0 && _count <= SmallBuffer.Length);
+      else
+         Debug.Assert(_count <= SmallBuffer.Length);
+   }
+   [MemberNotNull(nameof(_list))]
+   public void MigrateToList() {
+      Debug.Assert(IsBufferStored);
+      _list = new List<T>(SmallBuffer.Length * SmallBuffer.Length);
+      _list.AddRange(SmallBuffer.AsReadOnlySpan(ref _buffer)[.._count]);
+   }
 
    [MemberNotNullWhen(false, nameof(_list))]
    public readonly bool IsBufferStored
       => _list is null;
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public ValueList() {
       _count = 0;
       _buffer = default;
       _list = null;
    }
    public void Add(in T item) {
+      AssertInvariant();
       if (!IsBufferStored) {
          _list.Add(item);
          return;
@@ -50,7 +65,7 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
          buf[_count++] = item;
          return;
       }
-      if (_list is null) _list = [.. buf];
+      if (_list is null) MigrateToList();
       _list.Add(item);
    }
    public T this[int i] {
@@ -64,20 +79,23 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
       }
    }
    public readonly int IndexOf(in T item) {
+      AssertInvariant();
       if (!IsBufferStored) return _list.IndexOf(item);
 
       var buf = SmallBuffer.AsReadOnlySpan(in _buffer);
       return buf[.._count].IndexOf(item);
    }
    public void Insert(int index, in T value) {
+      AssertInvariant();
       Debug.Assert(index >= 0);
       if (!IsBufferStored) {
          _list.Insert(index, value);
          return;
       }
       if (_count == SmallBuffer.Length) {
-         _list = [.. SmallBuffer.AsReadOnlySpan(ref _buffer)];
-         _list.Insert(index, value);
+         MigrateToList();
+         //_list = [.. SmallBuffer.AsReadOnlySpan(ref _buffer)];
+         _list!.Insert(index, value);
          return;
       }
       var span = SmallBuffer.AsSpan(ref _buffer);
@@ -88,6 +106,7 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
       ++_count;
    }
    public void RemoveAt(int index) {
+      AssertInvariant();
       Debug.Assert(index >= 0 && index < Count);
       if (!IsBufferStored) {
          _list.RemoveAt(index);
@@ -101,15 +120,21 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
       --_count;
    }
    public void Clear() {
+      AssertInvariant();
       SmallBuffer.AsSpan(ref _buffer).Clear();
       if (!IsBufferStored) _list.Clear();
       _count = 0;
    }
-   public List<T> AsList() => IsBufferStored ? [.. SmallBuffer.AsSpan(ref _buffer)[.._count]] : _list;
+   public List<T> AsList() {
+      if (IsBufferStored) MigrateToList();
+      return _list;
+   }
+   //public List<T> AsList() => IsBufferStored ? [.. SmallBuffer.AsSpan(ref _buffer)[.._count]] : _list;
 
    public bool Contains(T value) => IndexOf(value) is not -1;
 
    public bool Remove(T item) {
+      AssertInvariant();
       var index = IndexOf(item);
       if (index is -1) return false;
       RemoveAt(index);
