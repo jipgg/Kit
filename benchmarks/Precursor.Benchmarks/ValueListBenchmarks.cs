@@ -1,121 +1,71 @@
 using BenchmarkDotNet.Attributes;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Order;
-using Precursor;
+using System.Collections.Immutable;
+namespace Precursor.Benchmarks.ValueListBenchmarks;
 
-[MemoryDiagnoser]
-[Orderer(SummaryOrderPolicy.FastestToSlowest)]
-public class Bench_ints_without_spill {
-   readonly static int N = SmallBuffer10<int>.Length;
-
-   [Benchmark]
-   public int List_Add() {
-      var list = new List<int>(SmallBuffer10<int>.Length);
-      for (int i = 0; i < N; ++i)
-         list.Add(i);
-      return list.Count;
-   }
-
-   [Benchmark]
-   public int ValueList_Add() {
-      var list = new ValueList<int, SmallBuffer10<int>>();
-      for (int i = 0; i < N; ++i)
-         list.Add(i);
-      return list.Count;
-   }
+[InlineArray(64)]
+public struct Byte64 : IEquatable<Byte64> {
+   byte _data;
+   public bool Equals(Byte64 other) => ((Span<byte>)this).SequenceEqual(other);
 }
-[MemoryDiagnoser]
-[Orderer(SummaryOrderPolicy.FastestToSlowest)]
-public class Bench_ints_with_spill {
-   readonly static int N = SmallBuffer10<int>.Length * 50;
 
-   [Benchmark]
-   public int List_Add() {
-      var list = new List<int>(SmallBuffer10<int>.Length);
-      for (int i = 0; i < N; ++i)
-         list.Add(i);
-      return list.Count;
-   }
-
-   [Benchmark]
-   public int ValueList_Add() {
-      var list = new ValueList<int, SmallBuffer10<int>>();
-      for (int i = 0; i < N; ++i)
-         list.Add(i);
-      return list.Count;
-   }
+public sealed class Class8 : IEquatable<Class8> {
+   readonly byte _data;
+   public bool Equals(Class8? other)
+      => other is null ? false : _data == other._data;
 }
 
 [MemoryDiagnoser]
-[Orderer(SummaryOrderPolicy.FastestToSlowest)]
-public class Bench_big_struct_without_spill {
-   readonly static int N = SmallBuffer10<BigStruct>.Length;
+[Orderer(SummaryOrderPolicy.Declared | SummaryOrderPolicy.FastestToSlowest)]
+[GenericTypeArguments(typeof(int))]
+[GenericTypeArguments(typeof(double))]
+[GenericTypeArguments(typeof(Class8))]
+public class ValueListAdd<T> where T : IEquatable<T>, new() {
 
-   [InlineArray(100)]
-   struct BigStruct : IEquatable<BigStruct> {
-      byte _data;
-      public bool Equals(BigStruct other) { throw new(); }
+   [Params(8, 16, 64)]
+   public int N;
+
+   ImmutableArray<T> _range;
+   ReadOnlySpan<T> Span => _range.AsSpan();
+   [GlobalSetup]
+   public void Setup() {
+      var builder = ImmutableArray.CreateBuilder<T>(N);
+      for (int i = 0; i < N; i++)
+         builder.Add(new());
+
+      _range = builder.MoveToImmutable();
    }
+
    [Benchmark]
    public int List_Add() {
-      var list = new List<BigStruct>(SmallBuffer10<BigStruct>.Length);
-      for (int i = 0; i < N; ++i)
-         list.Add(default);
+      var list = new List<T>();
+      for (int i = 0; i < N; ++i) list.Add(new());
       return list.Count;
    }
-
    [Benchmark]
    public int ValueList_Add() {
-      var list = new ValueList<BigStruct, SmallBuffer10<BigStruct>>();
-      for (int i = 0; i < N; ++i)
-         list.Add(default);
+      var list = new ValueList<T>();
+      for (int i = 0; i < N; ++i) list.Add(new());
       return list.Count;
    }
-}
-
-[MemoryDiagnoser]
-[Orderer(SummaryOrderPolicy.FastestToSlowest)]
-public class Bench_big_struct_with_spill {
-   readonly static int N = SmallBuffer10<BigStruct>.Length * 50;
-
-   [InlineArray(64)]
-   struct BigStruct : IEquatable<BigStruct> {
-      byte _data;
-      public bool Equals(BigStruct other) { throw new(); }
-   }
    [Benchmark]
-   public int List_Add() {
-      var list = new List<BigStruct>(SmallBuffer10<BigStruct>.Length);
-      for (int i = 0; i < N; ++i)
-         list.Add(default);
+   public int List_CapacityN_Add() {
+      var list = new List<T>(N);
+      for (int i = 0; i < N; ++i) list.Add(new());
       return list.Count;
    }
 
    [Benchmark]
-   public int ValueList_Add() {
-      var list = new ValueList<BigStruct, SmallBuffer10<BigStruct>>();
-      for (int i = 0; i < N; ++i)
-         list.Add(default);
-      return list.Count;
-   }
-}
-
-// weirdly enough the wrapper comes out on top consistently
-[MemoryDiagnoser]
-[Orderer(SummaryOrderPolicy.FastestToSlowest)]
-public class ValueListTS_vs_ValueListT {
-   readonly static int N = SmallBuffer10<long>.Length;
-
-   [Benchmark]
-   public int ValueListTS_Add() {
-      var list = new ValueList<long, SmallBuffer10<long>>();
-      for (int i = 0; i < N; ++i) list.Add(default);
+   public int List_AddRange_Span() {
+      var list = new List<T>();
+      list.AddRange(Span);
       return list.Count;
    }
    [Benchmark]
-   public int ValueListT_Add() {
-      var list = new ValueList<long>();
-      for (int i = 0; i < N; ++i) list.Add(default);
+   public int ValueList_AddRange_Span() {
+      var list = new ValueList<T>();
+      list.AddRange(Span);
       return list.Count;
    }
 }

@@ -11,16 +11,40 @@ public interface ISmallBuffer<Self, T> where Self : ISmallBuffer<Self, T> {
 
 
 [InlineArray(LengthAsConst)]
-public struct SmallBuffer10<T> : ISmallBuffer<SmallBuffer10<T>, T> {
+public struct SmallBuffer8<T> : ISmallBuffer<SmallBuffer8<T>, T> {
    T _data;
-   const int LengthAsConst = 10;
+   const int LengthAsConst = 8;
    public static int Length => LengthAsConst;
 
    [MethodImpl(AggressiveInlining)]
-   public static Span<T> AsSpan(ref SmallBuffer10<T> b) => b;
+   public static Span<T> AsSpan(ref SmallBuffer8<T> b) => b;
 
    [MethodImpl(AggressiveInlining)]
-   public static ReadOnlySpan<T> AsReadOnlySpan(ref readonly SmallBuffer10<T> b) => b;
+   public static ReadOnlySpan<T> AsReadOnlySpan(ref readonly SmallBuffer8<T> b) => b;
+}
+[InlineArray(LengthAsConst)]
+public struct SmallBuffer16<T> : ISmallBuffer<SmallBuffer16<T>, T> {
+   T _data;
+   const int LengthAsConst = 16;
+   public static int Length => LengthAsConst;
+
+   [MethodImpl(AggressiveInlining)]
+   public static Span<T> AsSpan(ref SmallBuffer16<T> b) => b;
+
+   [MethodImpl(AggressiveInlining)]
+   public static ReadOnlySpan<T> AsReadOnlySpan(ref readonly SmallBuffer16<T> b) => b;
+}
+[InlineArray(LengthAsConst)]
+public struct SmallBuffer4<T> : ISmallBuffer<SmallBuffer4<T>, T> {
+   T _data;
+   const int LengthAsConst = 4;
+   public static int Length => LengthAsConst;
+
+   [MethodImpl(AggressiveInlining)]
+   public static Span<T> AsSpan(ref SmallBuffer4<T> b) => b;
+
+   [MethodImpl(AggressiveInlining)]
+   public static ReadOnlySpan<T> AsReadOnlySpan(ref readonly SmallBuffer4<T> b) => b;
 }
 
 public struct ValueList<T, SmallBuffer>
@@ -55,6 +79,21 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
       _count = 0;
       _buffer = default;
       _list = null;
+   }
+   public void AddRange(params ReadOnlySpan<T> source) {
+      AssertInvariant();
+      if (!IsBufferStored) {
+         _list.AddRange(source);
+         return;
+      }
+      var buf = SmallBuffer.AsSpan(ref _buffer);
+      if (source.Length + _count <= SmallBuffer.Length) {
+         source.CopyTo(buf[_count..source.Length]);
+         _count += source.Length;
+         return;
+      }
+      if (_list is null) MigrateToList();
+      _list.AddRange(source);
    }
    public void Add(in T item) {
       AssertInvariant();
@@ -96,8 +135,7 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
       }
       if (_count == SmallBuffer.Length) {
          MigrateToList();
-         //_list = [.. SmallBuffer.AsReadOnlySpan(ref _buffer)];
-         _list!.Insert(index, value);
+         _list.Insert(index, value);
          return;
       }
       var span = SmallBuffer.AsSpan(ref _buffer);
@@ -132,9 +170,9 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
       return _list;
    }
 
-   public bool Contains(T value) => IndexOf(value) is not -1;
+   public bool Contains(in T item) => IndexOf(item) is not -1;
 
-   public bool Remove(T item) {
+   public bool Remove(in T item) {
       AssertInvariant();
       var index = IndexOf(item);
       if (index is -1) return false;
@@ -152,11 +190,12 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
 }
 
 public struct ValueList<T> where T : IEquatable<T> {
-   ValueList<T, SmallBuffer10<T>> _impl;
+   ValueList<T, SmallBuffer8<T>> _impl;
    public readonly int Count => _impl.Count;
    public readonly bool IsBufferStored => _impl.IsBufferStored;
    public ValueList() => _impl = new();
    public void Add(in T item) => _impl.Add(in item);
+   public void AddRange(params ReadOnlySpan<T> source) => _impl.AddRange(source);
 
    public T this[int i] {
       get => _impl[i];
@@ -170,5 +209,5 @@ public struct ValueList<T> where T : IEquatable<T> {
    public bool Contains(T item) => _impl.Contains(item);
    public bool Remove(T item) => _impl.Remove(item);
    [UnscopedRef]
-   public ValueList<T, SmallBuffer10<T>>.Enumerator GetEnumerator() => _impl.GetEnumerator();
+   public ValueList<T, SmallBuffer8<T>>.Enumerator GetEnumerator() => _impl.GetEnumerator();
 }
