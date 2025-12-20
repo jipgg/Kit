@@ -1,4 +1,4 @@
-namespace Precursor;
+namespace Precursor.Functional;
 
 public interface IInvoker<in T, out R>
 where T : allows ref struct

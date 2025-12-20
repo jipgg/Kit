@@ -1,4 +1,6 @@
 using FluentAssertions;
+using Precursor.Functional;
+
 namespace Precursor.Tests;
 
 using Optional = Optional<Foo>;
@@ -116,14 +118,14 @@ public class Optional_InvokerTests {
    [Fact]
    public void Map_with_IInvoker_works() {
       var o = new Optional(new Foo(4))
-          .Map<Foo, Invoker>(default);
+          .Map<Invoker, Foo>(default);
 
       o.Value!.X.Should().Be(8);
    }
    [Fact]
    public void Map_with_IStaticInvoker_works() {
       var o = new Optional(new Foo(4))
-          .Map<Foo, StaticInvoker>();
+          .Map<StaticInvoker, Foo>();
 
       o.Value!.X.Should().Be(8);
    }
@@ -131,14 +133,14 @@ public class Optional_InvokerTests {
    [Fact]
    public void AndThen_with_IInvoker_works() {
       var o = new Optional(new Foo(4))
-          .AndThen<Foo, InvokerOpt>(default);
+          .AndThen<InvokerOpt, Foo>(default);
 
       o.Value!.X.Should().Be(8);
    }
    [Fact]
    public void AndThen_with_IStaticInvoker_works() {
       var o = new Optional(new Foo(4))
-          .AndThen<Foo, StaticInvokerOpt>();
+          .AndThen<StaticInvokerOpt, Foo>();
 
       o.Value!.X.Should().Be(8);
    }
@@ -268,14 +270,14 @@ public class RefOptional_InvokerTests {
    [Fact]
    public void Map_with_IInvoker_works() {
       var o = new RefOptional(new RefFoo(4))
-          .Map<RefFoo, Invoker>(default);
+          .Map<Invoker, RefFoo>(default);
 
       o.Value.X.Should().Be(8);
    }
    [Fact]
    public void Map_with_IStaticInvoker_works() {
       var o = new RefOptional(new RefFoo(4))
-          .Map<RefFoo, StaticInvoker>();
+          .Map<StaticInvoker, RefFoo>();
 
       o.Value.X.Should().Be(8);
    }
@@ -283,14 +285,14 @@ public class RefOptional_InvokerTests {
    [Fact]
    public void AndThen_with_IInvoker_works() {
       var o = new RefOptional(new RefFoo(4))
-          .AndThen<RefFoo, InvokerOpt>(default);
+          .AndThen<InvokerOpt, RefFoo>(default);
 
       o.Value.X.Should().Be(8);
    }
    [Fact]
    public void AndThen_with_IStaticInvoker_works() {
       var o = new RefOptional(new RefFoo(4))
-          .AndThen<RefFoo, StaticInvokerOpt>();
+          .AndThen<StaticInvokerOpt, RefFoo>();
 
       o.Value.X.Should().Be(8);
    }

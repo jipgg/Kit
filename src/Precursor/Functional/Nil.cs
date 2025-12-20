@@ -1,4 +1,4 @@
-namespace Precursor;
+namespace Precursor.Functional;
 
 public readonly struct Nil {
    [MethodImpl(MethodImplOptions.AggressiveInlining)]

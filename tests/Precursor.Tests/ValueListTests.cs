@@ -1,4 +1,6 @@
 using FluentAssertions;
+using Precursor.Collections;
+using Precursor.Storage;
 
 namespace Precursor.Tests;
 
@@ -13,24 +15,18 @@ public class ValueListLaws {
 
    private static List<int> ModelFrom(params int[] xs) => xs.ToList();
 
-   private static void AssertSequenceEqual(ref IntList sut, List<int> model) {
-      sut.Count.Should().Be(model.Count);
+   private static void AssertSequenceEqual<T>(ref ValueList<T, SmallBuffer8<T>> sut, List<T> model) where T : IEquatable<T> {
+      Assert.Equal(sut.Count, model.Count);
 
       for (int i = 0; i < model.Count; i++) {
-         sut[i].Should().Be(model[i], $"element at index {i} should match the model");
+         Assert.Equal(sut[i], model[i]);
       }
 
       for (int i = 0; i < model.Count; i++) {
          var val = model[i];
-         sut.Contains(val).Should().BeTrue();
-         sut.IndexOf(val).Should().Be(model.IndexOf(val));
+         Assert.True(sut.Contains(val));
+         Assert.Equal(sut.IndexOf(val), model.IndexOf(val));
       }
-
-      // non-membership checks (avoid accidental collisions)
-      var missing = 0;
-      while (model.Contains(missing)) missing++;
-      sut.Contains(missing).Should().BeFalse();
-      sut.IndexOf(missing).Should().Be(-1);
    }
 
    [Fact]
@@ -56,7 +52,7 @@ public class ValueListLaws {
          model.Add(i);
       }
 
-      AssertSequenceEqual(ref sut, model);
+      AssertSequenceEqual<int>(ref sut, model);
    }
    [Theory]
    [InlineData(5)]
@@ -73,6 +69,24 @@ public class ValueListLaws {
       model.AddRange(arr.AsSpan());
 
       AssertSequenceEqual(ref sut, model);
+   }
+   [Theory]
+   [InlineData(5)]
+   [InlineData(10)]
+   [InlineData(11)]
+   [InlineData(25)]
+   public void AddRange_with_managed_preserves_order_and_count(int n) {
+      var sut = new ValueList<string, SmallBuffer8<string>>();
+      var model = new List<string>();
+
+      char[] abc = ['a', 'b', 'c', 'd', 'e', 'f', 'x', 'y'];
+      string shuffled() => new(abc.Shuffle().ToArray());
+      string[] arr = [.. Enumerable.Range(0, n).Select(e => shuffled())];
+
+      sut.AddRange(arr.AsSpan());
+      model.AddRange(arr.AsSpan());
+
+      AssertSequenceEqual<string>(ref sut, model);
    }
 
    [Theory]

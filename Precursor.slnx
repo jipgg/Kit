@@ -6,6 +6,5 @@
     <Folder Name="/tests/">
         <Project Path="tests/Precursor.Tests/Precursor.Tests.csproj" />
     </Folder>
-    <Project Path="src/Precursor.Unmanaged/Precursor.Unmanaged.csproj" />
     <Project Path="src/Precursor/Precursor.csproj" />
 </Solution>

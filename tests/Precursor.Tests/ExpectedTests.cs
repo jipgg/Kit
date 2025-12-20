@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Precursor.Functional;
 namespace Precursor.Tests;
 
 using Expected = Expected<Foo, Bar>;
@@ -158,14 +159,14 @@ public class Expected_InvokerTests {
    [Fact]
    public void Map_with_IInvoker_works() {
       var e = new Expected(new Foo(4))
-          .Map<Foo, Invoker>(default);
+          .Map<Invoker, Foo>(default);
 
       e.Value.X.Should().Be(8);
    }
    [Fact]
    public void Map_with_IStaticInvoker_works() {
       var e = new Expected(new Foo(4))
-          .Map<Foo, StaticInvoker>();
+          .Map<StaticInvoker, Foo>();
 
       e.Value.X.Should().Be(8);
    }
@@ -173,13 +174,13 @@ public class Expected_InvokerTests {
    [Fact]
    public void AndThen_with_IInvoker_works() {
       var e = new Expected(new Foo(4))
-          .AndThen<Foo, InvokerExp>(default);
+          .AndThen<InvokerExp, Foo>(default);
       e.Value.X.Should().Be(8);
    }
    [Fact]
    public void AndThen_with_IStaticInvoker_works() {
       var e = new Expected(new Foo(4))
-          .AndThen<Foo, StaticInvokerExp>();
+          .AndThen<StaticInvokerExp, Foo>();
       e.Value.X.Should().Be(8);
    }
 
@@ -339,14 +340,14 @@ public class RefExpected_InvokerTests {
    [Fact]
    public void Map_with_IInvoker_works() {
       var e = new RefExpected(new RefFoo(4))
-          .Map<RefFoo, Invoker>(default);
+          .Map<Invoker, RefFoo>(default);
 
       e.Value.X.Should().Be(8);
    }
    [Fact]
    public void Map_with_IStaticInvoker_works() {
       var e = new RefExpected(new RefFoo(4))
-          .Map<RefFoo, StaticInvoker>();
+          .Map<StaticInvoker, RefFoo>();
 
       e.Value.X.Should().Be(8);
    }
@@ -354,13 +355,13 @@ public class RefExpected_InvokerTests {
    [Fact]
    public void AndThen_with_IInvoker_works() {
       var e = new RefExpected(new RefFoo(4))
-          .AndThen<RefFoo, InvokerExp>(default);
+          .AndThen<InvokerExp, RefFoo>(default);
       e.Value.X.Should().Be(8);
    }
    [Fact]
    public void AndThen_with_IStaticInvoker_works() {
       var e = new RefExpected(new RefFoo(4))
-          .AndThen<RefFoo, StaticInvokerExp>();
+          .AndThen<StaticInvokerExp, RefFoo>();
       e.Value.X.Should().Be(8);
    }
 

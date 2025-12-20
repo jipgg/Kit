@@ -1,63 +1,20 @@
 using System.Diagnostics;
-namespace Precursor;
+using Precursor.Storage;
+namespace Precursor.Collections;
 
 using static MethodImplOptions;
 
-public interface ISmallBuffer<Self, T> where Self : ISmallBuffer<Self, T> {
-   static abstract int Length { get; }
-   static abstract Span<T> AsSpan(ref Self self);
-   static abstract ReadOnlySpan<T> AsReadOnlySpan(ref readonly Self self);
-}
-
-
-[InlineArray(LengthAsConst)]
-public struct SmallBuffer8<T> : ISmallBuffer<SmallBuffer8<T>, T> {
-   T _data;
-   const int LengthAsConst = 8;
-   public static int Length => LengthAsConst;
-
-   [MethodImpl(AggressiveInlining)]
-   public static Span<T> AsSpan(ref SmallBuffer8<T> b) => b;
-
-   [MethodImpl(AggressiveInlining)]
-   public static ReadOnlySpan<T> AsReadOnlySpan(ref readonly SmallBuffer8<T> b) => b;
-}
-[InlineArray(LengthAsConst)]
-public struct SmallBuffer16<T> : ISmallBuffer<SmallBuffer16<T>, T> {
-   T _data;
-   const int LengthAsConst = 16;
-   public static int Length => LengthAsConst;
-
-   [MethodImpl(AggressiveInlining)]
-   public static Span<T> AsSpan(ref SmallBuffer16<T> b) => b;
-
-   [MethodImpl(AggressiveInlining)]
-   public static ReadOnlySpan<T> AsReadOnlySpan(ref readonly SmallBuffer16<T> b) => b;
-}
-[InlineArray(LengthAsConst)]
-public struct SmallBuffer4<T> : ISmallBuffer<SmallBuffer4<T>, T> {
-   T _data;
-   const int LengthAsConst = 4;
-   public static int Length => LengthAsConst;
-
-   [MethodImpl(AggressiveInlining)]
-   public static Span<T> AsSpan(ref SmallBuffer4<T> b) => b;
-
-   [MethodImpl(AggressiveInlining)]
-   public static ReadOnlySpan<T> AsReadOnlySpan(ref readonly SmallBuffer4<T> b) => b;
-}
-
 public struct ValueList<T, SmallBuffer>
 where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T> {
-   SmallBuffer _buffer;
+   internal SmallBuffer _buffer;
 
-   List<T>? _list;
-   int _count;
+   internal List<T>? _list;
+   internal int _count;
 
    public readonly int Count => IsBufferStored ? _count : _list.Count;
 
    [Conditional("DEBUG")]
-   readonly void AssertInvariant() {
+   internal readonly void AssertInvariant() {
       if (_list is null)
          Debug.Assert(_count >= 0 && _count <= SmallBuffer.Length);
       else
@@ -86,9 +43,10 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
          _list.AddRange(source);
          return;
       }
-      var buf = SmallBuffer.AsSpan(ref _buffer);
       if (source.Length + _count <= SmallBuffer.Length) {
-         source.CopyTo(buf[_count..source.Length]);
+         var destination = SmallBuffer.AsSpan(ref _buffer).Slice(_count, source.Length);
+         Debug.Assert(destination.Length == source.Length);
+         source.CopyTo(destination);
          _count += source.Length;
          return;
       }
@@ -206,8 +164,8 @@ public struct ValueList<T> where T : IEquatable<T> {
    public void RemoveAt(int index) => _impl.RemoveAt(index);
    public void Clear() => _impl.Clear();
    public List<T> AsList() => _impl.AsList();
-   public bool Contains(T item) => _impl.Contains(item);
-   public bool Remove(T item) => _impl.Remove(item);
+   public bool Contains(in T item) => _impl.Contains(item);
+   public bool Remove(in T item) => _impl.Remove(item);
    [UnscopedRef]
    public ValueList<T, SmallBuffer8<T>>.Enumerator GetEnumerator() => _impl.GetEnumerator();
 }

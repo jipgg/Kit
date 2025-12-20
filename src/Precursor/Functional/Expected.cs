@@ -1,4 +1,4 @@
-namespace Precursor;
+namespace Precursor.Functional;
 
 using static MethodImplOptions;
 
@@ -52,12 +52,12 @@ public readonly struct Expected<T, E> {
        => HasValue ? f(Value) : new Unexpected<E>(Error);
 
    [MethodImpl(AggressiveInlining)]
-   public Expected<X, E> Map<X, Invoker>(in Invoker f)
+   public Expected<X, E> Map<Invoker, X>(in Invoker f)
       where Invoker : IInvoker<T, X>, allows ref struct
        => HasValue ? f.Invoke(Value) : new Unexpected<E>(Error);
 
    [MethodImpl(AggressiveInlining)]
-   public Expected<X, E> Map<X, StaticInvoker>()
+   public Expected<X, E> Map<StaticInvoker, X>()
       where StaticInvoker : IStaticInvoker<T, X>, allows ref struct
        => HasValue ? StaticInvoker.Invoke(Value) : new Unexpected<E>(Error);
 
@@ -77,12 +77,12 @@ public readonly struct Expected<T, E> {
        => HasError ? new Unexpected<X>(f(Error)) : Value;
 
    [MethodImpl(AggressiveInlining)]
-   public Expected<T, X> MapError<X, Invoker>(in Invoker f)
+   public Expected<T, X> MapError<Invoker, X>(in Invoker f)
       where Invoker : IInvoker<E, X>, allows ref struct
        => HasValue ? Value : new Unexpected<X>(f.Invoke(Error));
 
    [MethodImpl(AggressiveInlining)]
-   public Expected<T, X> MapError<X, StaticInvoker>()
+   public Expected<T, X> MapError<StaticInvoker, X>()
       where StaticInvoker : IStaticInvoker<E, X>, allows ref struct
        => HasValue ? Value : new Unexpected<X>(StaticInvoker.Invoke(Error));
 
@@ -115,12 +115,12 @@ public readonly struct Expected<T, E> {
        => HasValue ? f(Value) : new Unexpected<E>(Error);
 
    [MethodImpl(AggressiveInlining)]
-   public Expected<X, E> AndThen<X, Invoker>(in Invoker f)
+   public Expected<X, E> AndThen<Invoker, X>(in Invoker f)
       where Invoker : IInvoker<T, Expected<X, E>>, allows ref struct
        => HasValue ? f.Invoke(Value) : new Unexpected<E>(Error);
 
    [MethodImpl(AggressiveInlining)]
-   public Expected<X, E> AndThen<X, StaticInvoker>()
+   public Expected<X, E> AndThen<StaticInvoker, X>()
       where StaticInvoker : IStaticInvoker<T, Expected<X, E>>, allows ref struct
        => HasValue ? StaticInvoker.Invoke(Value) : new Unexpected<E>(Error);
 
@@ -153,12 +153,12 @@ public readonly struct Expected<T, E> {
        => HasError ? f(Error) : Value;
 
    [MethodImpl(AggressiveInlining)]
-   public Expected<T, X> OrElse<X, Invoker>(in Invoker f)
+   public Expected<T, X> OrElse<Invoker, X>(in Invoker f)
       where Invoker : IInvoker<E, Expected<T, X>>, allows ref struct
        => HasError ? f.Invoke(Error) : Value;
 
    [MethodImpl(AggressiveInlining)]
-   public Expected<T, X> OrElse<X, StaticInvoker>()
+   public Expected<T, X> OrElse<StaticInvoker, X>()
       where StaticInvoker : IStaticInvoker<E, Expected<T, X>>, allows ref struct
        => HasError ? StaticInvoker.Invoke(Error) : Value;
 
@@ -218,13 +218,13 @@ where E : allows ref struct {
        => HasValue ? f(Value) : new Unexpected<E>(Error);
 
    [MethodImpl(AggressiveInlining)]
-   public RefExpected<X, E> Map<X, Invoker>(in Invoker f)
+   public RefExpected<X, E> Map<Invoker, X>(in Invoker f)
       where Invoker : IInvoker<T, X>, allows ref struct
       where X : allows ref struct
        => HasValue ? f.Invoke(Value) : new Unexpected<E>(Error);
 
    [MethodImpl(AggressiveInlining)]
-   public RefExpected<X, E> Map<X, StaticInvoker>()
+   public RefExpected<X, E> Map<StaticInvoker, X>()
       where StaticInvoker : IStaticInvoker<T, X>, allows ref struct
       where X : allows ref struct
        => HasValue ? StaticInvoker.Invoke(Value) : new Unexpected<E>(Error);
@@ -238,13 +238,13 @@ where E : allows ref struct {
        => HasError ? new Unexpected<X>(f(Error)) : Value;
 
    [MethodImpl(AggressiveInlining)]
-   public RefExpected<T, X> MapError<X, Invoker>(in Invoker f)
+   public RefExpected<T, X> MapError<Invoker, X>(in Invoker f)
       where Invoker : IInvoker<E, X>, allows ref struct
       where X : allows ref struct
        => HasValue ? Value : new Unexpected<X>(f.Invoke(Error));
 
    [MethodImpl(AggressiveInlining)]
-   public RefExpected<T, X> MapError<X, StaticInvoker>()
+   public RefExpected<T, X> MapError<StaticInvoker, X>()
       where StaticInvoker : IStaticInvoker<E, X>, allows ref struct
       where X : allows ref struct
        => HasValue ? Value : new Unexpected<X>(StaticInvoker.Invoke(Error));
@@ -268,13 +268,13 @@ where E : allows ref struct {
        => HasValue ? f(Value) : new Unexpected<E>(Error);
 
    [MethodImpl(AggressiveInlining)]
-   public RefExpected<X, E> AndThen<X, Invoker>(in Invoker f)
+   public RefExpected<X, E> AndThen<Invoker, X>(in Invoker f)
       where Invoker : IInvoker<T, RefExpected<X, E>>, allows ref struct
       where X : allows ref struct
        => HasValue ? f.Invoke(Value) : new Unexpected<E>(Error);
 
    [MethodImpl(AggressiveInlining)]
-   public RefExpected<X, E> AndThen<X, StaticInvoker>()
+   public RefExpected<X, E> AndThen<StaticInvoker, X>()
       where StaticInvoker : IStaticInvoker<T, RefExpected<X, E>>, allows ref struct
       where X : allows ref struct
        => HasValue ? StaticInvoker.Invoke(Value) : new Unexpected<E>(Error);
@@ -304,13 +304,13 @@ where E : allows ref struct {
        => HasError ? f(Error) : Value;
 
    [MethodImpl(AggressiveInlining)]
-   public RefExpected<T, X> OrElse<X, Invoker>(in Invoker f)
+   public RefExpected<T, X> OrElse<Invoker, X>(in Invoker f)
       where Invoker : IInvoker<E, RefExpected<T, X>>, allows ref struct
       where X : allows ref struct
        => HasError ? f.Invoke(Error) : Value;
 
    [MethodImpl(AggressiveInlining)]
-   public RefExpected<T, X> OrElse<X, StaticInvoker>()
+   public RefExpected<T, X> OrElse<StaticInvoker, X>()
       where StaticInvoker : IStaticInvoker<E, RefExpected<T, X>>, allows ref struct
       where X : allows ref struct
        => HasError ? StaticInvoker.Invoke(Error) : Value;

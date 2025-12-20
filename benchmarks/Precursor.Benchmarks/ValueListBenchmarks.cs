@@ -2,6 +2,7 @@ using BenchmarkDotNet.Attributes;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Order;
 using System.Collections.Immutable;
+using Precursor.Collections;
 namespace Precursor.Benchmarks.ValueListBenchmarks;
 
 [InlineArray(64)]
@@ -11,13 +12,13 @@ public struct Byte64 : IEquatable<Byte64> {
 }
 
 public sealed class Class8 : IEquatable<Class8> {
-   readonly byte _data;
+   readonly byte _data = default;
    public bool Equals(Class8? other)
       => other is null ? false : _data == other._data;
 }
 
 [MemoryDiagnoser]
-[Orderer(SummaryOrderPolicy.Declared | SummaryOrderPolicy.FastestToSlowest)]
+[Orderer(SummaryOrderPolicy.Default)]
 [GenericTypeArguments(typeof(int))]
 [GenericTypeArguments(typeof(double))]
 [GenericTypeArguments(typeof(Class8))]

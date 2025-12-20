@@ -1,11 +1,11 @@
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+
 namespace Precursor.Unmanaged;
 
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using static System.Runtime.CompilerServices.MethodImplOptions;
-using System.Diagnostics;
+using static MethodImplOptions;
 
-public unsafe struct ResizableBuffer<T, Allocator> : IDisposable
+public unsafe struct DynamicBuffer<T, Allocator> : IDisposable
 where T : unmanaged
 where Allocator : notnull, IAllocator<T> {
    public static readonly nuint SizeOfT = (nuint)Unsafe.SizeOf<T>();
@@ -101,9 +101,9 @@ where Allocator : notnull, IAllocator<T> {
          new Span<T>(_data, (int)Size).CopyTo(span);
       }
    }
-   public ResizableBuffer<T, Allocator> Clone() {
+   public DynamicBuffer<T, Allocator> Clone() {
       Debug.Assert(Size > 0 && Capacity > 0 && _allocator is not null && _data is not null);
-      var list = new ResizableBuffer<T, Allocator>(Capacity, _allocator);
+      var list = new DynamicBuffer<T, Allocator>(Capacity, _allocator);
       NativeMemory.Copy(_data, list._data, GetByteCount(Size));
       return list;
    }
@@ -127,7 +127,7 @@ where Allocator : notnull, IAllocator<T> {
       NativeMemory.Fill(_data, GetByteCount(Size), 0);
       Size = 0;
    }
-   public ResizableBuffer(nuint capacity, Allocator allocator, float growthFactor = 2) {
+   public DynamicBuffer(nuint capacity, Allocator allocator, float growthFactor = 2) {
       Debug.Assert(allocator is not null);
       _growthFactor = growthFactor;
       _allocator = allocator;

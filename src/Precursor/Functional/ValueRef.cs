@@ -1,4 +1,4 @@
-namespace Precursor;
+namespace Precursor.Functional;
 
 using static MethodImplOptions;
 

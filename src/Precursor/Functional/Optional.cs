@@ -1,4 +1,4 @@
-namespace Precursor;
+namespace Precursor.Functional;
 
 public sealed class InvalidOptionalAccessException : InvalidOperationException;
 
@@ -33,12 +33,12 @@ public readonly struct Optional<T> {
        => HasValue ? new(f(Value)) : default;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public Optional<X> Map<X, Invoker>(in Invoker f)
+   public Optional<X> Map<Invoker, X>(in Invoker f)
    where Invoker : IInvoker<T, X>, allows ref struct
        => HasValue ? new(f.Invoke(Value)) : default;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public Optional<X> Map<X, StaticInvoker>()
+   public Optional<X> Map<StaticInvoker, X>()
    where StaticInvoker : IStaticInvoker<T, X>, allows ref struct
        => HasValue ? new(StaticInvoker.Invoke(Value)) : default;
 
@@ -71,12 +71,12 @@ public readonly struct Optional<T> {
        => HasValue ? f(Value) : default;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public Optional<X> AndThen<X, Invoker>(in Invoker f)
+   public Optional<X> AndThen<Invoker, X>(in Invoker f)
    where Invoker : IInvoker<T, Optional<X>>, allows ref struct
        => HasValue ? f.Invoke(Value) : default;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public Optional<X> AndThen<X, StaticInvoker>()
+   public Optional<X> AndThen<StaticInvoker, X>()
    where StaticInvoker : IStaticInvoker<T, Optional<X>>, allows ref struct
        => HasValue ? StaticInvoker.Invoke(Value) : default;
 
@@ -115,13 +115,13 @@ where T : allows ref struct {
        => HasValue ? new(f(Value)) : default;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public RefOptional<X> Map<X, Invoker>(in Invoker f)
+   public RefOptional<X> Map<Invoker, X>(in Invoker f)
    where Invoker : IInvoker<T, X>, allows ref struct
    where X : allows ref struct
        => HasValue ? new(f.Invoke(Value)) : default;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public RefOptional<X> Map<X, StaticInvoker>()
+   public RefOptional<X> Map<StaticInvoker, X>()
    where StaticInvoker : IStaticInvoker<T, X>, allows ref struct
    where X : allows ref struct
        => HasValue ? new(StaticInvoker.Invoke(Value)) : default;
@@ -151,13 +151,13 @@ where T : allows ref struct {
        => HasValue ? f(Value) : default;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public RefOptional<X> AndThen<X, Invoker>(in Invoker f)
+   public RefOptional<X> AndThen<Invoker, X>(in Invoker f)
    where Invoker : IInvoker<T, RefOptional<X>>, allows ref struct
    where X : allows ref struct
        => HasValue ? f.Invoke(Value) : default;
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public RefOptional<X> AndThen<X, StaticInvoker>()
+   public RefOptional<X> AndThen<StaticInvoker, X>()
    where StaticInvoker : IStaticInvoker<T, RefOptional<X>>, allows ref struct
    where X : allows ref struct
        => HasValue ? StaticInvoker.Invoke(Value) : default;
