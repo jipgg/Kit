@@ -1,11 +1,13 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Precursor.Storage;
+using Precursor.Functional;
 namespace Precursor.Collections;
 
 using static MethodImplOptions;
 
 public struct ValueList<T, SmallBuffer>
-where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T> {
+where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> {
    internal SmallBuffer _buffer;
 
    internal List<T>? _list;
@@ -23,7 +25,7 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
    [MemberNotNull(nameof(_list))]
    public void MigrateToList() {
       Debug.Assert(IsBufferStored);
-      _list = new List<T>(SmallBuffer.Length * SmallBuffer.Length);
+      _list = new List<T>(SmallBuffer.Length * 2);
       _list.AddRange(SmallBuffer.AsReadOnlySpan(ref _buffer)[.._count]);
    }
 
@@ -77,12 +79,12 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
          else _list[i] = value;
       }
    }
-   public readonly int IndexOf(in T item) {
+   public readonly int IndexOf(in T item, IEqualityComparer<T>? comparer = null) {
       AssertInvariant();
-      if (!IsBufferStored) return _list.IndexOf(item);
+      if (!IsBufferStored) return CollectionsMarshal.AsSpan(_list).IndexOf(item, comparer);
 
       var buf = SmallBuffer.AsReadOnlySpan(in _buffer);
-      return buf[.._count].IndexOf(item);
+      return buf[.._count].IndexOf(item, comparer);
    }
    public void Insert(int index, in T value) {
       AssertInvariant();
@@ -128,7 +130,7 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
       return _list;
    }
 
-   public bool Contains(in T item) => IndexOf(item) is not -1;
+   public bool Contains(in T item, IEqualityComparer<T>? comparer = null) => IndexOf(item, comparer) is not -1;
 
    public bool Remove(in T item) {
       AssertInvariant();
@@ -147,23 +149,20 @@ where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> where T : IEquatable<T>
    public Enumerator GetEnumerator() => new(ref this);
 }
 
-public struct ValueList<T> where T : IEquatable<T> {
-   internal ValueList<T, SmallBuffer8<T>> _impl;
+public struct ValueList<T> {
+   internal ValueList<T, DefaultSmallBuffer<T>> _impl;
    public readonly int Count => _impl.Count;
    public readonly bool IsBufferStored => _impl.IsBufferStored;
    public ValueList() => _impl = new();
-   internal ValueList(in ValueList<T> v) => _impl = v;
    public void Add(in T item) => _impl.Add(in item);
    public void AddRange(params ReadOnlySpan<T> source) => _impl.AddRange(source);
 
-   public static implicit operator ValueList<T, SmallBuffer8<T>>(in ValueList<T> v) => v._impl;
-   public static implicit operator ValueList<T>(in ValueList<T, SmallBuffer8<T>> v) => new(v);
 
    public T this[int i] {
       get => _impl[i];
       set => _impl[i] = value;
    }
-   public readonly int IndexOf(in T item) => _impl.IndexOf(in item);
+   public readonly int IndexOf(in T item, IEqualityComparer<T>? comparer = null) => _impl.IndexOf(in item, comparer);
    public void Insert(int index, in T item) => _impl.Insert(index, item);
    public void RemoveAt(int index) => _impl.RemoveAt(index);
    public void Clear() => _impl.Clear();
@@ -171,5 +170,25 @@ public struct ValueList<T> where T : IEquatable<T> {
    public bool Contains(in T item) => _impl.Contains(item);
    public bool Remove(in T item) => _impl.Remove(item);
    [UnscopedRef]
-   public ValueList<T, SmallBuffer8<T>>.Enumerator GetEnumerator() => _impl.GetEnumerator();
+   public ValueList<T, DefaultSmallBuffer<T>>.Enumerator GetEnumerator() => _impl.GetEnumerator();
+}
+
+public static class ValueCollectionsMarshal {
+   public static Span<T> AsSpan<T, SmallBuffer>(ref ValueList<T, SmallBuffer> list)
+      where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> {
+
+      if (!list.IsBufferStored) return CollectionsMarshal.AsSpan(list._list);
+      return SmallBuffer.AsSpan(ref list._buffer).Slice(0, list._count);
+   }
+   public static Span<T> AsSpan<T>(ref ValueList<T> list)
+      => AsSpan<T, DefaultSmallBuffer<T>>(ref list._impl);
+
+   public static ReadOnlySpan<T> AsReadOnlySpan<T, SmallBuffer>(ref readonly ValueList<T, SmallBuffer> list)
+      where SmallBuffer : struct, ISmallBuffer<SmallBuffer, T> {
+
+      if (!list.IsBufferStored) return CollectionsMarshal.AsSpan(list._list);
+      return SmallBuffer.AsReadOnlySpan(in list._buffer).Slice(0, list._count);
+   }
+   public static ReadOnlySpan<T> AsReadOnlySpan<T>(ref readonly ValueList<T> list)
+      => AsReadOnlySpan<T, DefaultSmallBuffer<T>>(in list._impl);
 }

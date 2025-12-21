@@ -1,72 +1,68 @@
 using BenchmarkDotNet.Attributes;
-using System.Runtime.CompilerServices;
-using BenchmarkDotNet.Order;
-using System.Collections.Immutable;
+using BenchmarkDotNet.Jobs;
+using Precursor.Storage;
 using Precursor.Collections;
 namespace Precursor.Benchmarks.ValueListBenchmarks;
 
-[InlineArray(64)]
-public struct Byte64 : IEquatable<Byte64> {
-   byte _data;
-   public bool Equals(Byte64 other) => ((Span<byte>)this).SequenceEqual(other);
-}
-
-public sealed class Class8 : IEquatable<Class8> {
-   readonly byte _data = default;
-   public bool Equals(Class8? other)
-      => other is null ? false : _data == other._data;
-}
+public class SomeClass();
 
 [MemoryDiagnoser]
-[Orderer(SummaryOrderPolicy.Default)]
+// [SimpleJob(RuntimeMoniker.NativeAot10_0)]
+[SimpleJob(RuntimeMoniker.Net10_0)]
 [GenericTypeArguments(typeof(int))]
-[GenericTypeArguments(typeof(double))]
-[GenericTypeArguments(typeof(Class8))]
-public class ValueListAdd<T> where T : IEquatable<T>, new() {
-
-   [Params(8, 16, 64)]
+[GenericTypeArguments(typeof(nuint))]
+[GenericTypeArguments(typeof(SomeClass))]
+public class Add<T> where T : new() {
+   [Params(4, 8, 16, 32, 64)]
    public int N;
 
-   ImmutableArray<T> _range;
-   ReadOnlySpan<T> Span => _range.AsSpan();
-   [GlobalSetup]
-   public void Setup() {
-      var builder = ImmutableArray.CreateBuilder<T>(N);
-      for (int i = 0; i < N; i++)
-         builder.Add(new());
-
-      _range = builder.MoveToImmutable();
-   }
-
    [Benchmark]
-   public int List_Add() {
+   public int List() {
       var list = new List<T>();
       for (int i = 0; i < N; ++i) list.Add(new());
       return list.Count;
    }
    [Benchmark]
-   public int ValueList_Add() {
+   public int ValueList16() {
+      var list = new ValueList<T, SmallBuffer16<T>>();
+      for (int i = 0; i < N; ++i) list.Add(new());
+      return list.Count;
+   }
+   [Benchmark]
+   public int ValueList() {
       var list = new ValueList<T>();
       for (int i = 0; i < N; ++i) list.Add(new());
       return list.Count;
    }
    [Benchmark]
-   public int List_CapacityN_Add() {
+   public int ValueList8() {
+      var list = new ValueList<T, SmallBuffer8<T>>();
+      for (int i = 0; i < N; ++i) list.Add(new());
+      return list.Count;
+   }
+   [Benchmark]
+   public int ValueList4() {
+      var list = new ValueList<T, SmallBuffer4<T>>();
+      for (int i = 0; i < N; ++i) list.Add(new());
+      return list.Count;
+   }
+   [Benchmark]
+   public int ValueList32() {
+      var list = new ValueList<T, SmallBuffer32<T>>();
+      for (int i = 0; i < N; ++i) list.Add(new());
+      return list.Count;
+   }
+   [Benchmark]
+   public int ValueList64() {
+      var list = new ValueList<T, SmallBuffer64<T>>();
+      for (int i = 0; i < N; ++i) list.Add(new());
+      return list.Count;
+   }
+   [Benchmark]
+   public int ListPresized() {
       var list = new List<T>(N);
       for (int i = 0; i < N; ++i) list.Add(new());
       return list.Count;
    }
 
-   [Benchmark]
-   public int List_AddRange_Span() {
-      var list = new List<T>();
-      list.AddRange(Span);
-      return list.Count;
-   }
-   [Benchmark]
-   public int ValueList_AddRange_Span() {
-      var list = new ValueList<T>();
-      list.AddRange(Span);
-      return list.Count;
-   }
 }
